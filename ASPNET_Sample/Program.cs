@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ASPNET_Sample.Data;
+using ASPNET_Sample.SeedData;
+using ASPNET_Sample.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ASPNET_SampleContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ASPNET_SampleContext") ?? throw new InvalidOperationException("Connection string 'ASPNET_SampleContext' not found.")));
@@ -9,6 +12,13 @@ builder.Services.AddDbContext<ASPNET_SampleContext>(options =>
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    SeedData.Initialize(services);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
