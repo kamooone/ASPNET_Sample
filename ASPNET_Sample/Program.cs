@@ -3,6 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 using ASPNET_Sample.Data;
 using ASPNET_Sample.SeedData;
 using ASPNET_Sample.Models;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ASPNET_SampleContext>(options =>
@@ -10,6 +15,15 @@ builder.Services.AddDbContext<ASPNET_SampleContext>(options =>
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Add authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = "YourAppCookieName";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        options.SlidingExpiration = true;
+    });
 
 var app = builder.Build();
 
@@ -33,10 +47,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+// Add authentication and authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
-    
+
 app.Run();

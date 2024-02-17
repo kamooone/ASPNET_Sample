@@ -5,6 +5,8 @@ using ASPNET_Sample.ViewModel;
 using ASPNET_Sample.Data;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 namespace ASPNET_Sample.Controllers
 {
@@ -40,6 +42,15 @@ namespace ASPNET_Sample.Controllers
                 ModelState.AddModelError(string.Empty, "Invalid username or password.");
                 return View(model);
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            // ログアウト処理
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            _logger.LogInformation("ログインアウト完了");
+            return RedirectToAction("Index", "Home");
         }
     }
 }
