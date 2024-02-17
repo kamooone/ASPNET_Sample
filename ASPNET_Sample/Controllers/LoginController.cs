@@ -1,15 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using ASPNET_Sample.ViewModel;
+using ASPNET_Sample.Data;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace ASPNET_Sample.Controllers
 {
     public class LoginController : Controller
     {
         private readonly ILogger<LoginController> _logger;
+        private readonly ASPNET_SampleContext _context;
 
-        public LoginController(ILogger<LoginController> logger)
+        public LoginController(ILogger<LoginController> logger, ASPNET_SampleContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
@@ -21,7 +28,8 @@ namespace ASPNET_Sample.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(LoginViewModel model)
         {
-            if (Validate.ValidateUser(model.Mail, model.Password))
+            var user = await _context.User.FirstOrDefaultAsync(u => u.Username == model.UserName && u.PasswordHash == model.Password);
+            if (user != null)
             {
                 _logger.LogInformation("ログインボタンを押してログイン成功");
                 return RedirectToAction("Index", "Member");
@@ -29,20 +37,9 @@ namespace ASPNET_Sample.Controllers
             else
             {
                 _logger.LogInformation("ログインボタンを押してログイン失敗");
-                ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                ModelState.AddModelError(string.Empty, "Invalid username or password.");
                 return View(model);
             }
-        }
-    }
-
-    public class Validate
-    {
-        public static bool ValidateUser(string email, string password)
-        {
-            // ユーザーの認証ロジックをここに実装する
-            // 例えば、データベースや外部サービスを使用してユーザーを認証する
-            // この例では、単純化のためにユーザー名とパスワードがハードコーディングされています
-            return email == "test@example.com" && password == "password";
         }
     }
 }
