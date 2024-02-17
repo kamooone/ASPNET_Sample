@@ -15,5 +15,7 @@ namespace ASPNET_Sample.Data
         }
 
         public DbSet<ASPNET_Sample.Models.Movie> Movie { get; set; } = default!;
+
+        public DbSet<ASPNET_Sample.Models.User> User { get; set; }
     }
 }
