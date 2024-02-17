@@ -18,4 +18,11 @@
         <label class="form-check-label" for="rememberMe">Remember me</label>
     </div>
     <button type="submit" class="btn btn-primary">Login</button>
+
+    @if (ViewData.ModelState.ContainsKey(string.Empty))
+    {
+        <div class="alert alert-danger mt-3">
+            @Html.ValidationSummary()
+        </div>
+    }
 </form>
