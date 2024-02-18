@@ -73,13 +73,20 @@ namespace ASPNET_Sample.Controllers
         // パスワードをハッシュ化するメソッド
         private string HashPassword(string password)
         {
-            using (SHA256 sha256 = SHA256.Create())
+            // ランダムなソルトを生成
+            byte[] saltBytes = new byte[16];
+            using (var rng = RandomNumberGenerator.Create())
             {
-                // パスワードをバイト配列に変換してハッシュ化
-                byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                rng.GetBytes(saltBytes);
+            }
 
-                // ハッシュ化されたバイト配列をBase64文字列に変換して返す
-                return Convert.ToBase64String(hashedBytes);
+            using (var pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, 10000, HashAlgorithmName.SHA256))
+            {
+                byte[] hashBytes = pbkdf2.GetBytes(32); // 32バイトのハッシュ値を生成
+                byte[] saltedHashBytes = new byte[48]; // ハッシュ値の後ろにソルトを追加するために48バイトの配列を確保
+                Buffer.BlockCopy(saltBytes, 0, saltedHashBytes, 0, 16); // ソルトをコピー
+                Buffer.BlockCopy(hashBytes, 0, saltedHashBytes, 16, 32); // ハッシュ値をコピー
+                return Convert.ToBase64String(saltedHashBytes); // ソルトとハッシュ値をBase64文字列に変換して返す
             }
         }
 
