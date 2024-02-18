@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ASPNET_Sample.Data;
 using ASPNET_Sample.Models;
+using System.Text;
+using System.Security.Cryptography;
 
 namespace ASPNET_Sample.Controllers
 {
@@ -58,11 +60,27 @@ namespace ASPNET_Sample.Controllers
         {
             if (ModelState.IsValid)
             {
+                // パスワードをハッシュ化
+                user.PasswordHash = HashPassword(user.PasswordHash);
+
                 _context.Add(user);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(user);
+        }
+
+        // パスワードをハッシュ化するメソッド
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                // パスワードをバイト配列に変換してハッシュ化
+                byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+                // ハッシュ化されたバイト配列をBase64文字列に変換して返す
+                return Convert.ToBase64String(hashedBytes);
+            }
         }
 
         // GET: Users/Edit/5
